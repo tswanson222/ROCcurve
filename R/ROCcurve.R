@@ -23,6 +23,8 @@
 #' @param roc_lwd Numeric
 #' @param roc_col Character
 #' @param prc Logical
+#' @param ... Additional arguments
+#' @param x ROCcurve object for plotting
 #'
 #' @return An ROCcurve object or plot
 #' @export
@@ -38,55 +40,62 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                      midline = TRUE, midline_lty = 2, midline_lwd = 2, midline_col = "red",
                      pt_pch = 23, pt_border = "black", pt_col = "green", thresh = TRUE,
                      roc_lty = 1, roc_lwd = 2, roc_col = "black", prc = FALSE){
-  if(!is.null(model)){if(missing(y)){y <- unname(model$y)}}
-  stopifnot(dim(table(y)) == 2)
-  if(is.factor(y) | is.character(y)){
-    y <- factor(y)
-    levels(y) <- 0:1
-    y <- as.numeric(as.character(y))
+  if(is(y, 'ROCcurve')){
+    sens <- y$results$sens
+    spec <- y$results$spec
+    ppv <- y$results$ppv
+    opt <- ifelse(isTRUE(prc), which.max(ppv + sens), which.max(sens + spec))
+  } else {
+    if(!is.null(model)){if(missing(y)){y <- unname(model$y)}}
+    stopifnot(dim(table(y)) == 2)
+    if(is.factor(y) | is.character(y)){
+      y <- factor(y)
+      levels(y) <- 0:1
+      y <- as.numeric(as.character(y))
+    }
+    stopifnot(all(names(table(y)) %in% c("0", "1")))
+    if(is.null(model)){
+      stopifnot(!is.null(X))
+      X <- as.data.frame(X)
+      model <- glm(y ~ ., data = X, family = binomial)
+      predProbs <- predict(model, type = "response")
+    } else if(is(model, 'train')){
+      predProbs <- predict(model, X, 'prob')[, 2]
+    } else if(is(model, 'glinternet')){
+      predProbs <- predict(model, X, type = 'response')[, 2]
+    } else if(is(model, 'glm') | is(model, 'glmboost') | is(model, 'gbm')){
+      predProbs <- predict(model, type = "response")
+    } else if(is(model, 'numeric')){
+      stopifnot(length(model) == length(y))
+      predProbs <- model
+    }
+    p <- unname(sort(predProbs))
+    if(thresh | prc){
+      t1 <- (c(-Inf, p) + c(p, +Inf))/2
+      t2 <- (c(-Inf, p)/2 + c(p, +Inf)/2)
+      p <- ifelse(abs(t1) > 1e+100, t2, t1)
+    }
+    preds <- list()
+    tp <- tn <- fp <- fn <- c()
+    for(i in 1:length(p)){
+      preds[[i]] <- ifelse(predProbs > p[i], 1, 0)
+      Y <- cbind(y, preds[[i]])
+      tn[i] <- sum(Y[Y[, 1] == 0, 1] == Y[Y[, 1] == 0, 2])
+      tp[i] <- sum(Y[Y[, 1] == 1, 1] == Y[Y[, 1] == 1, 2])
+      fn[i] <- sum(Y[Y[, 2] == 0, 1] != Y[Y[, 2] == 0, 2])
+      fp[i] <- sum(Y[Y[, 2] == 1, 1] != Y[Y[, 2] == 1, 2])
+    }
+    sens <- tp/sum(y)
+    spec <- tn/(length(y) - sum(y))
+    npv <- tn/(tn + fn)
+    ppv <- tp/(tp + fp)
+    opt <- ifelse(isTRUE(prc), which.max(ppv + sens), which.max(sens + spec))
+    optCut <- p[opt]
+    optSens <- sens[opt]
+    optSpec <- spec[opt]
+    optPPV <- ppv[opt]
+    optNPV <- npv[opt]
   }
-  stopifnot(all(names(table(y)) %in% c("0", "1")))
-  if(is.null(model)){
-    stopifnot(!is.null(X))
-    X <- as.data.frame(X)
-    model <- glm(y ~ ., data = X, family = binomial)
-    predProbs <- predict(model, type = "response")
-  } else if(is(model, 'train')){
-    predProbs <- predict(model, X, 'prob')[, 2]
-  } else if(is(model, 'glinternet')){
-    predProbs <- predict(model, X, type = 'response')[, 2]
-  } else if(is(model, 'glm') | is(model, 'glmboost') | is(model, 'gbm')){
-    predProbs <- predict(model, type = "response")
-  } else if(is(model, 'numeric')){
-    stopifnot(length(model) == length(y))
-    predProbs <- model
-  }
-  p <- unname(sort(predProbs))
-  if(thresh | prc){
-    t1 <- (c(-Inf, p) + c(p, +Inf))/2
-    t2 <- (c(-Inf, p)/2 + c(p, +Inf)/2)
-    p <- ifelse(abs(t1) > 1e+100, t2, t1)
-  }
-  preds <- list()
-  tp <- tn <- fp <- fn <- c()
-  for(i in 1:length(p)){
-    preds[[i]] <- ifelse(predProbs > p[i], 1, 0)
-    Y <- cbind(y, preds[[i]])
-    tn[i] <- sum(Y[Y[, 1] == 0, 1] == Y[Y[, 1] == 0, 2])
-    tp[i] <- sum(Y[Y[, 1] == 1, 1] == Y[Y[, 1] == 1, 2])
-    fn[i] <- sum(Y[Y[, 2] == 0, 1] != Y[Y[, 2] == 0, 2])
-    fp[i] <- sum(Y[Y[, 2] == 1, 1] != Y[Y[, 2] == 1, 2])
-  }
-  sens <- tp/sum(y)
-  spec <- tn/(length(y) - sum(y))
-  npv <- tn/(tn + fn)
-  ppv <- tp/(tp + fp)
-  opt <- ifelse(isTRUE(prc), which.max(ppv + sens), which.max(sens + spec))
-  optCut <- p[opt]
-  optSens <- sens[opt]
-  optSpec <- spec[opt]
-  optPPV <- ppv[opt]
-  optNPV <- npv[opt]
   if(isTRUE(prc)){
     sx <- c(1, sens)
     sy <- c(0, ppv)
@@ -108,10 +117,21 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
   }
   AUC <- sum(height * width)
   if(plot == FALSE){
-    return(list(results = data.frame(cutoff = p, sens = sens, spec = spec, ppv = ppv, npv = npv),
+    if(is(y, 'ROCcurve')){
+      p <- y$results$cutoff
+      npv <- y$results$npv
+      optCut <- p[opt]
+      optSens <- sens[opt]
+      optSpec <- spec[opt]
+      optPPV <- ppv[opt]
+      optNPV <- npv[opt]
+    }
+    out <- list(results = data.frame(cutoff = p, sens = sens, spec = spec, ppv = ppv, npv = npv),
                 optimal = unlist(list(cutoff = optCut, sensitivity = optSens,
                                       specificity = optSpec, PPV = optPPV,
-                                      NPV = optNPV)), AUC = AUC))
+                                      NPV = optNPV)), AUC = AUC)
+    class(out) <- c('ROCcurve', 'list')
+    return(out)
   } else {
     xlabel <- ifelse(isTRUE(prc), 'Recall', '1 - Specificity')
     ylabel <- ifelse(isTRUE(prc), 'Precision', 'Sensitivity')
@@ -144,3 +164,8 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
   }
 }
 
+#' @rdname ROCcurve
+#' @export
+plot.ROCcurve <- function(x, ...){
+  ROCcurve(y = x, plot = TRUE, ...)
+}

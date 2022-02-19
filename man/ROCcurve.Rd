@@ -2,6 +2,7 @@
 % Please edit documentation in R/ROCcurve.R
 \name{ROCcurve}
 \alias{ROCcurve}
+\alias{plot.ROCcurve}
 \title{ROC and PRC curves}
 \usage{
 ROCcurve(
@@ -27,6 +28,8 @@ ROCcurve(
   roc_col = "black",
   prc = FALSE
 )
+
+\method{plot}{ROCcurve}(x, ...)
 }
 \arguments{
 \item{y}{Vector with data for binary outcome}
@@ -70,6 +73,10 @@ ROCcurve(
 \item{roc_col}{Character}
 
 \item{prc}{Logical}
+
+\item{x}{ROCcurve object for plotting}
+
+\item{...}{Additional arguments}
 }
 \value{
 An ROCcurve object or plot
