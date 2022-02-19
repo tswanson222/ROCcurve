@@ -177,3 +177,29 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
 plot.ROCcurve <- function(x, ...){
   ROCcurve(y = x, plot = TRUE, ...)
 }
+
+#' Summarize optimal ROC and PRC results
+#'
+#' @param object ROCcurve object
+#' @param type Indicate \code{"roc"}, \code{"prc"}, or both
+#' @param ... Additional arguments
+#'
+#' @return The optimal parameter values for the ROC or PRC curve
+#' @export
+#'
+#' @examples
+#' 1 + 1
+summary.ROCcurve <- function(object, type = c('roc', 'prc'), ...){
+  type <- match.arg(tolower(type), c('roc', 'prc'), several.ok = TRUE)
+  if(length(type) == 1){
+    obj <- ROCcurve(y = object, plot = FALSE, prc = isTRUE(type == 'prc'), ...)
+    out <- data.frame(type = attr(obj, 'type'), AUC = obj$AUC, as.list(obj$optimal))
+  } else {
+    obj1 <- ROCcurve(y = object, plot = FALSE, prc = FALSE, ...)
+    obj2 <- ROCcurve(y = object, plot = FALSE, prc = TRUE, ...)
+    out1 <- data.frame(type = 'ROC', AUC = obj1$AUC, as.list(obj1$optimal))
+    out2 <- data.frame(type = 'PRC', AUC = obj2$AUC, as.list(obj2$optimal))
+    out <- rbind(out1, out2)
+  }
+  return(out)
+}
