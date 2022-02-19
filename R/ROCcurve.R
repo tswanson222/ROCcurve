@@ -129,6 +129,7 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                                       specificity = optSpec, PPV = optPPV,
                                       NPV = optNPV)), AUC = AUC)
     class(out) <- c('ROCcurve', 'list')
+    attr(out, 'type') <- ifelse(isTRUE(prc), 'PRC', 'ROC')
     return(out)
   } else {
     xlabel <- ifelse(isTRUE(prc), 'Recall', '1 - Specificity')
