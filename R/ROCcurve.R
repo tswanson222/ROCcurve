@@ -27,9 +27,10 @@
 #' @return An ROCcurve object or plot
 #' @export
 #'
+#' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom graphics abline axis lines points
 #' @importFrom methods is
-#' @importFrom stats binomial glm na.omit predict
+#' @import stats
 #'
 #' @examples
 #' 1 + 1
