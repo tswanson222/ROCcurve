@@ -23,8 +23,6 @@
 #' @param roc_lwd Numeric
 #' @param roc_col Character
 #' @param prc Logical
-#' @param ... Additional arguments
-#' @param x ROCcurve object for plotting
 #'
 #' @return An ROCcurve object or plot
 #' @export
@@ -164,8 +162,17 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
   }
 }
 
-#' @rdname ROCcurve
+
+#' Plotting function for ROC and PRC curves
+#'
+#' @param x ROCcurve object
+#' @param ... Additional arguments
+#'
+#' @return An ROC or PRC plot
 #' @export
+#'
+#' @examples
+#' 1 + 1
 plot.ROCcurve <- function(x, ...){
   ROCcurve(y = x, plot = TRUE, ...)
 }
