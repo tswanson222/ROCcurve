@@ -23,6 +23,7 @@
 #' @param roc_lwd Numeric
 #' @param roc_col Character
 #' @param prc Logical
+#' @param plot_na Logical
 #'
 #' @return An ROCcurve object or plot
 #' @export
@@ -38,12 +39,15 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                      grid = FALSE, grid_lty = 3, grid_lwd = 1.5, grid_col = "lightgray",
                      midline = TRUE, midline_lty = 2, midline_lwd = 2, midline_col = "red",
                      pt_pch = 23, pt_border = "black", pt_col = "green", thresh = TRUE,
-                     roc_lty = 1, roc_lwd = 2, roc_col = "black", prc = FALSE){
+                     roc_lty = 1, roc_lwd = 2, roc_col = "black", prc = FALSE, plot_na = FALSE){
+  stopifnot(is.logical(prc))
+  stopifnot(is.logical(plot))
+  stopifnot(is.logical(plot_na))
   if(is(y, 'ROCcurve')){
     sens <- y$results$sens
     spec <- y$results$spec
     ppv <- y$results$ppv
-    opt <- ifelse(isTRUE(prc), which.max(ppv + sens), which.max(sens + spec))
+    opt <- ifelse(prc, which.max(ppv + sens), which.max(sens + spec))
   } else {
     if(!missing(y) & is.null(model)){
       if(is(y, 'glm')){
@@ -95,24 +99,27 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
     spec <- tn/(length(y) - sum(y))
     npv <- tn/(tn + fn)
     ppv <- tp/(tp + fp)
-    opt <- ifelse(isTRUE(prc), which.max(ppv + sens), which.max(sens + spec))
+    opt <- ifelse(prc, which.max(ppv + sens), which.max(sens + spec))
     optCut <- p[opt]
     optSens <- sens[opt]
     optSpec <- spec[opt]
     optPPV <- ppv[opt]
     optNPV <- npv[opt]
   }
-  if(isTRUE(prc)){
+  if(prc){
     sx <- c(1, sens)
     sy <- c(0, ppv)
+    syna <- 0
     if(any(is.na(sy))){
       if(sum(is.na(sy)) == 1){
         sy <- na.omit(sy)
       } else {
-        sy[which(is.na(sy))] <- sx[which(is.na(sy))]
+        syna <- which(is.na(sy))
+        sy[syna] <- sx[syna]
       }
     }
-    if(length(sy) < length(sx)){sy <- c(sy, 1)}
+    syextra <- length(sy) < length(sx)
+    if(syextra){sy <- c(sy, 1)}
     height <- sy[-1] - sy[-length(sy)]
     width <- (sx[-1] + sx[-length(sx)])/2
   } else {
@@ -122,7 +129,7 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
     width <- sx[-1] - sx[-length(sx)]
   }
   AUC <- sum(height * width)
-  if(plot == FALSE){
+  if(!plot){
     if(is(y, 'ROCcurve')){
       p <- y$results$cutoff
       npv <- y$results$npv
@@ -137,12 +144,12 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                                       specificity = optSpec, PPV = optPPV,
                                       NPV = optNPV)), AUC = AUC)
     class(out) <- c('ROCcurve', 'list')
-    attr(out, 'type') <- ifelse(isTRUE(prc), 'PRC', 'ROC')
+    attr(out, 'type') <- ifelse(prc, 'PRC', 'ROC')
     return(out)
   } else {
-    xlabel <- ifelse(isTRUE(prc), 'Recall', '1 - Specificity')
-    ylabel <- ifelse(isTRUE(prc), 'Precision', 'Sensitivity')
-    main <- ifelse(isTRUE(prc), paste0('PR Curve\nAUC = ', round(AUC, 3)),
+    xlabel <- ifelse(prc, 'Recall', '1 - Specificity')
+    ylabel <- ifelse(prc, 'Precision', 'Sensitivity')
+    main <- ifelse(prc, paste0('PR Curve\nAUC = ', round(AUC, 3)),
                    paste0('ROC Curve\nAUC = ', round(AUC, 3)))
     plot(0, 0, type = "n", ylim = c(0, 1), xlim = c(0, 1), axes = FALSE,
          xlab = xlabel, ylab = ylabel, main = main)
@@ -155,13 +162,25 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
       }
     }
     axis(1); axis(2)
-    if(isTRUE(prc)){sx <- 1 - sx}
+    if(!plot_na & prc){
+      if(syextra){
+        sy <- sy[-length(sy)]
+        sx <- sx[-length(sx)]
+      }
+      if(!identical(syna, 0)){
+        sx[syna] <- NA
+        sy[syna] <- NA
+      }
+    }
+    if(prc){sx <- 1 - sx}
     lines(1 - sx, sy, lty = roc_lty, lwd = roc_lwd, col = roc_col)
-    if(midline != FALSE & !isTRUE(prc)){
+    if(midline != FALSE){
       if(midline == TRUE){midline <- 1}
       if(midline == "grey" | midline == "gray"){midline_lty <- 1; midline_col = "grey"}
       if(midline == 2){midline_lty <- 1; midline_col = "grey"}
-      abline(a = 0, b = 1, lty = midline_lty, lwd = midline_lwd, col = midline_col)
+      prctrue <- as.numeric(prc)
+      abline(a = prctrue, b = 1 - (2 * prctrue), lty = midline_lty,
+             lwd = midline_lwd, col = midline_col)
     }
     if(optPoint != FALSE){
       if(optPoint == "black" | optPoint == 2){pt_pch <- 8; pt_col <- "black"}

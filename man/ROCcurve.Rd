@@ -25,7 +25,8 @@ ROCcurve(
   roc_lty = 1,
   roc_lwd = 2,
   roc_col = "black",
-  prc = FALSE
+  prc = FALSE,
+  plot_na = FALSE
 )
 }
 \arguments{
@@ -70,6 +71,8 @@ ROCcurve(
 \item{roc_col}{Character}
 
 \item{prc}{Logical}
+
+\item{plot_na}{Logical}
 }
 \value{
 An ROCcurve object or plot
