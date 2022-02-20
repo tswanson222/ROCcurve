@@ -45,7 +45,14 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
     ppv <- y$results$ppv
     opt <- ifelse(isTRUE(prc), which.max(ppv + sens), which.max(sens + spec))
   } else {
-    if(!is.null(model)){if(missing(y)){y <- unname(model$y)}}
+    if(!missing(y) & is.null(model)){
+      if(is(y, 'glm')){
+        model <- y
+        y <- unname(model$y)
+      }
+    } else if(!is.null(model) & missing(y)){
+      y <- unname(model$y)
+    }
     stopifnot(dim(table(y)) == 2)
     if(is.factor(y) | is.character(y)){
       y <- factor(y)
