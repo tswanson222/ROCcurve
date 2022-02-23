@@ -11,9 +11,10 @@ auc_test(
   x2,
   nboot = 1000,
   seed = NULL,
+  prc = FALSE,
   stratified = TRUE,
   verbose = TRUE,
-  ...
+  alternative = c("two.sided", "less", "greater")
 )
 }
 \arguments{
@@ -31,12 +32,14 @@ model}
 
 \item{seed}{Numeric value for seed}
 
+\item{prc}{Logical, determines whether to fit PR or ROC curves}
+
 \item{stratified}{Logical. Determines whether to retain class proportions
 during bootstrapped resampling}
 
 \item{verbose}{Logical. Determines whether to show progress bar}
 
-\item{...}{Additional argument for \code{ROCcurve}}
+\item{alternative}{Character, determines what kind of alternative hypothesis}
 }
 \value{
 D-statistic and associated p-value

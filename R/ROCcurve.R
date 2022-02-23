@@ -40,9 +40,7 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                      midline = TRUE, midline_lty = 2, midline_lwd = 2, midline_col = "red",
                      pt_pch = 23, pt_border = "black", pt_col = "green", thresh = TRUE,
                      roc_lty = 1, roc_lwd = 2, roc_col = "black", prc = FALSE, plot_na = FALSE){
-  stopifnot(is.logical(prc))
-  stopifnot(is.logical(plot))
-  stopifnot(is.logical(plot_na))
+  stopifnot(all(sapply(list(prc, plot, plot_na), is.logical)))
   if(is(y, 'ROCcurve')){
     sens <- y$results$sens
     spec <- y$results$spec
