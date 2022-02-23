@@ -41,15 +41,22 @@ roc1 <- ROCcurve(y = mtcars$vs, X = mtcars$mpg)
 # Or with multiple predictors
 roc2 <- ROCcurve(y = mtcars$vs, X = mtcars[, 1:4])
 
+summary(roc2)
+
 # plot the ROC curve
 plot(roc1)
 
 # plot the PR curve
-plot(roc1, prc = TRUE)
+plot(roc1, type = 'prc')
 
 
 # Fit PR curves
 prc <- ROCcurve(y = mtcars$vs, X = mtcars$mpg, prc = TRUE)
 plot(prc)
+
+summary(prc)
+
+# Conduct an AUC test
+auc_test(mtcars, 'am', 'mpg', 'disp', nboot = 100, seed = 91)
 ```
 

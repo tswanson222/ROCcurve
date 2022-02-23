@@ -4,10 +4,12 @@
 \alias{plot.ROCcurve}
 \title{Plotting function for ROC and PRC curves}
 \usage{
-\method{plot}{ROCcurve}(x, ...)
+\method{plot}{ROCcurve}(x, type = c("default", "roc", "prc"), ...)
 }
 \arguments{
 \item{x}{ROCcurve object}
+
+\item{type}{Set to default or type of curve to plot}
 
 \item{...}{Additional arguments}
 }
@@ -23,5 +25,5 @@ prc <- ROCcurve(mtcars$vs, mtcars$mpg, prc = TRUE)
 
 plot(roc)
 
-plot(prc, prc = TRUE)
+plot(prc)
 }

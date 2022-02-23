@@ -193,6 +193,7 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
 #' Plotting function for ROC and PRC curves
 #'
 #' @param x ROCcurve object
+#' @param type Set to default or type of curve to plot
 #' @param ... Additional arguments
 #'
 #' @return An ROC or PRC plot
@@ -204,9 +205,15 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
 #'
 #' plot(roc)
 #'
-#' plot(prc, prc = TRUE)
-plot.ROCcurve <- function(x, ...){
-  ROCcurve(y = x, plot = TRUE, ...)
+#' plot(prc)
+plot.ROCcurve <- function(x, type = c('default', 'roc', 'prc'), ...){
+  type <- match.arg(tolower(type), c('default', 'roc', 'prc'))
+  if(identical(type, 'default')){
+    prc <- isTRUE(attr(x, 'type') == 'PRC')
+  } else {
+    prc <- isTRUE(type == 'prc')
+  }
+  ROCcurve(y = x, plot = TRUE, prc = prc, ...)
 }
 
 #' Summarize optimal ROC and PRC results
