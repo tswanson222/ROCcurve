@@ -57,6 +57,6 @@ plot(prc)
 summary(prc)
 
 # Conduct an AUC test
-auc_test(mtcars, 'am', 'mpg', 'disp', nboot = 100, seed = 91)
+auc_test(mtcars, 'am', 'mpg', 'disp', nboot = 100, seed = 91, verbose = FALSE)
 ```
 
