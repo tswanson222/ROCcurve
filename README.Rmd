@@ -51,7 +51,8 @@ plot(roc1, type = 'prc')
 
 
 # Fit PR curves
-prc <- ROCcurve(y = mtcars$vs, X = mtcars$mpg, prc = TRUE)
+prc <- ROCcurve(y = mtcars$vs, X = mtcars$wt, prc = TRUE)
+
 plot(prc)
 
 summary(prc)

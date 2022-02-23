@@ -52,13 +52,18 @@ plot(roc1, type = 'prc')
 ``` r
 
 # Fit PR curves
-prc <- ROCcurve(y = mtcars$vs, X = mtcars$mpg, prc = TRUE)
-plot(prc)
+prc <- ROCcurve(y = mtcars$vs, X = mtcars$wt, prc = TRUE)
 
+plot(prc)
+```
+
+<img src="man/figures/README-example-3.png" width="100%" />
+
+``` r
 summary(prc)
-#>   type       AUC    cutoff sensitivity specificity       PPV  NPV
-#> 1  ROC 0.9107143 0.5512225   0.7857143   0.9444444 0.9166667 0.85
-#> 2  PRC 0.8849666 0.5512225   0.7857143   0.9444444 0.9166667 0.85
+#>   type       AUC   cutoff sensitivity specificity       PPV NPV
+#> 1  ROC 0.8412698 0.278402           1   0.6111111 0.6666667   1
+#> 2  PRC 0.8005955 0.278402           1   0.6111111 0.6666667   1
 
 # Conduct an AUC test
 auc_test(mtcars, 'am', 'mpg', 'disp', nboot = 100, seed = 91, verbose = FALSE)
