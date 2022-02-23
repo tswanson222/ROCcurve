@@ -20,5 +20,8 @@ The optimal parameter values for the ROC or PRC curve
 Summarize optimal ROC and PRC results
 }
 \examples{
-1 + 1
+roc <- ROCcurve(mtcars$vs, mtcars$mpg)
+prc <- ROCcurve(mtcars$vs, mtcars$mpg, prc = TRUE)
+
+summary(roc)
 }

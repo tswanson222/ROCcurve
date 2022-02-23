@@ -32,7 +32,9 @@ model}
 
 \item{seed}{Numeric value for seed}
 
-\item{prc}{Logical, determines whether to fit PR or ROC curves}
+\item{prc}{Logical, determines whether to fit PR or ROC curves. If set to
+\code{"both"}, then the AUC test will be performed for both ROC and PR
+curves}
 
 \item{stratified}{Logical. Determines whether to retain class proportions
 during bootstrapped resampling}
@@ -48,5 +50,5 @@ D-statistic and associated p-value
 Compare two AUC values from ROC or PRC curves
 }
 \examples{
-1 + 1
+auc_test(mtcars, 'am', 'mpg', 'disp', nboot = 100, seed = 91)
 }

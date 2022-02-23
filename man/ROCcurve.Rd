@@ -81,5 +81,6 @@ An ROCcurve object or plot
 These are ROC and PRC curves
 }
 \examples{
-1 + 1
+roc <- ROCcurve(mtcars$vs, mtcars$mpg)
+prc <- ROCcurve(mtcars$vs, mtcars$mpg, prc = TRUE)
 }

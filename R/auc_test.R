@@ -8,7 +8,9 @@
 #'   model
 #' @param nboot Number of bootstrap iterations
 #' @param seed Numeric value for seed
-#' @param prc Logical, determines whether to fit PR or ROC curves
+#' @param prc Logical, determines whether to fit PR or ROC curves. If set to
+#'   \code{"both"}, then the AUC test will be performed for both ROC and PR
+#'   curves
 #' @param stratified Logical. Determines whether to retain class proportions
 #'   during bootstrapped resampling
 #' @param verbose Logical. Determines whether to show progress bar
@@ -18,7 +20,7 @@
 #' @export
 #'
 #' @examples
-#' 1 + 1
+#' auc_test(mtcars, 'am', 'mpg', 'disp', nboot = 100, seed = 91)
 auc_test <- function(data, y, x1, x2, nboot = 1000, seed = NULL,
                      prc = FALSE, stratified = TRUE, verbose = TRUE,
                      alternative = c('two.sided', 'less', 'greater')){
@@ -31,6 +33,13 @@ auc_test <- function(data, y, x1, x2, nboot = 1000, seed = NULL,
     if(!is.null(names(data))){
       rownames(out) <- names(data)
     }
+    return(out)
+  } else if(identical(prc, 'both')){
+    call <- as.list(match.call())[-1]
+    out <- do.call(rbind, lapply(c(FALSE, TRUE), function(i){
+      calli <- replace(call, 'prc', i)
+      do.call(auc_test, calli)
+    }))
     return(out)
   }
   stopifnot(is.character(y) & is.character(x1) & is.character(x2))

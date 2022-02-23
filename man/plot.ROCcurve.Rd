@@ -18,5 +18,10 @@ An ROC or PRC plot
 Plotting function for ROC and PRC curves
 }
 \examples{
-1 + 1
+roc <- ROCcurve(mtcars$vs, mtcars$mpg)
+prc <- ROCcurve(mtcars$vs, mtcars$mpg, prc = TRUE)
+
+plot(roc)
+
+plot(prc, prc = TRUE)
 }

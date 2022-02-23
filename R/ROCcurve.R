@@ -34,7 +34,8 @@
 #' @import stats
 #'
 #' @examples
-#' 1 + 1
+#' roc <- ROCcurve(mtcars$vs, mtcars$mpg)
+#' prc <- ROCcurve(mtcars$vs, mtcars$mpg, prc = TRUE)
 ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                      grid = FALSE, grid_lty = 3, grid_lwd = 1.5, grid_col = "lightgray",
                      midline = TRUE, midline_lty = 2, midline_lwd = 2, midline_col = "red",
@@ -198,7 +199,12 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
 #' @export
 #'
 #' @examples
-#' 1 + 1
+#' roc <- ROCcurve(mtcars$vs, mtcars$mpg)
+#' prc <- ROCcurve(mtcars$vs, mtcars$mpg, prc = TRUE)
+#'
+#' plot(roc)
+#'
+#' plot(prc, prc = TRUE)
 plot.ROCcurve <- function(x, ...){
   ROCcurve(y = x, plot = TRUE, ...)
 }
@@ -213,7 +219,10 @@ plot.ROCcurve <- function(x, ...){
 #' @export
 #'
 #' @examples
-#' 1 + 1
+#' roc <- ROCcurve(mtcars$vs, mtcars$mpg)
+#' prc <- ROCcurve(mtcars$vs, mtcars$mpg, prc = TRUE)
+#'
+#' summary(roc)
 summary.ROCcurve <- function(object, type = c('roc', 'prc'), ...){
   type <- match.arg(tolower(type), c('roc', 'prc'), several.ok = TRUE)
   if(length(type) == 1){
