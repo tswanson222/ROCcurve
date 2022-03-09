@@ -14,7 +14,8 @@ auc_test(
   prc = FALSE,
   stratified = TRUE,
   verbose = TRUE,
-  alternative = c("two.sided", "less", "greater")
+  alternative = c("two.sided", "less", "greater"),
+  cutoff = ">"
 )
 }
 \arguments{
@@ -42,6 +43,9 @@ during bootstrapped resampling}
 \item{verbose}{Logical. Determines whether to show progress bar}
 
 \item{alternative}{Character, determines what kind of alternative hypothesis}
+
+\item{cutoff}{Character string. Define how to classify cases relative to the
+predicted probability cutoff}
 }
 \value{
 D-statistic and associated p-value

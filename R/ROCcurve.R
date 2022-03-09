@@ -24,6 +24,8 @@
 #' @param roc_col Character
 #' @param prc Logical
 #' @param plot_na Logical
+#' @param cutoff Character string. Define how to classify cases relative to the
+#'   predicted probability cutoff
 #'
 #' @return An ROCcurve object or plot
 #' @export
@@ -40,7 +42,9 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                      grid = FALSE, grid_lty = 3, grid_lwd = 1.5, grid_col = "lightgray",
                      midline = TRUE, midline_lty = 2, midline_lwd = 2, midline_col = "red",
                      pt_pch = 23, pt_border = "black", pt_col = "green", thresh = TRUE,
-                     roc_lty = 1, roc_lwd = 2, roc_col = "black", prc = FALSE, plot_na = FALSE){
+                     roc_lty = 1, roc_lwd = 2, roc_col = "black", prc = FALSE,
+                     plot_na = FALSE, cutoff = '>'){
+  cutoff <- match.arg(cutoff, c('>', '>='))
   stopifnot(all(sapply(list(prc, plot, plot_na), is.logical)))
   if(is(y, 'ROCcurve')){
     sens <- y$results$sens
@@ -87,7 +91,11 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
     preds <- list()
     tp <- tn <- fp <- fn <- c()
     for(i in 1:length(p)){
-      preds[[i]] <- ifelse(predProbs > p[i], 1, 0)
+      if(cutoff == '>'){
+        preds[[i]] <- ifelse(predProbs > p[i], 1, 0)
+      } else if(cutoff == '>='){
+        preds[[i]] <- ifelse(predProbs >= p[i], 1, 0)
+      }
       Y <- cbind(y, preds[[i]])
       tn[i] <- sum(Y[Y[, 1] == 0, 1] == Y[Y[, 1] == 0, 2])
       tp[i] <- sum(Y[Y[, 1] == 1, 1] == Y[Y[, 1] == 1, 2])

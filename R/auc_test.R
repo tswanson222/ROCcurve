@@ -15,6 +15,8 @@
 #'   during bootstrapped resampling
 #' @param verbose Logical. Determines whether to show progress bar
 #' @param alternative Character, determines what kind of alternative hypothesis
+#' @param cutoff Character string. Define how to classify cases relative to the
+#'   predicted probability cutoff
 #'
 #' @return D-statistic and associated p-value
 #' @export
@@ -23,15 +25,16 @@
 #' auc_test(mtcars, 'am', 'mpg', 'disp', nboot = 100, seed = 91)
 auc_test <- function(data, y, x1, x2, nboot = 1000, seed = NULL,
                      prc = FALSE, stratified = TRUE, verbose = TRUE,
-                     alternative = c('two.sided', 'less', 'greater')){
+                     alternative = c('two.sided', 'less', 'greater'),
+                     cutoff = '>'){
   if(is(data, 'list')){
     call <- as.list(match.call())[-1]
     out <- do.call(rbind, lapply(data, function(i){
       calli <- replace(call, 'data', list(i))
       do.call(auc_test, calli)
     }))
-    if(!is.null(names(data))){
-      rownames(out) <- names(data)
+    if(!is.null(names(data)) & !identical(prc, 'both')){
+        rownames(out) <- names(data)
     }
     return(out)
   } else if(identical(prc, 'both')){
@@ -45,8 +48,8 @@ auc_test <- function(data, y, x1, x2, nboot = 1000, seed = NULL,
   stopifnot(is.character(y) & is.character(x1) & is.character(x2))
   stopifnot(length(unique(data[, y])) == 2)
   alternative <- match.arg(alternative)
-  auc1 <- ROCcurve(data[, y], data[, x1], plot = FALSE, prc = prc)$AUC
-  auc2 <- ROCcurve(data[, y], data[, x2], plot = FALSE, prc = prc)$AUC
+  auc1 <- ROCcurve(data[, y], data[, x1], plot = FALSE, prc = prc, cutoff = cutoff)$AUC
+  auc2 <- ROCcurve(data[, y], data[, x2], plot = FALSE, prc = prc, cutoff = cutoff)$AUC
   if(!is.null(seed)){set.seed(seed)}
   if(verbose){pb <- txtProgressBar(max = nboot, style = 3)}
   auc_diffs <- sapply(1:nboot, function(i){
@@ -59,8 +62,8 @@ auc_test <- function(data, y, x1, x2, nboot = 1000, seed = NULL,
     } else {
       dati <- data[sample(1:nrow(data), replace = TRUE), ]
     }
-    a1 <- ROCcurve(dati[, y], dati[, x1], plot = FALSE, prc = prc)$AUC
-    a2 <- ROCcurve(dati[, y], dati[, x2], plot = FALSE, prc = prc)$AUC
+    a1 <- ROCcurve(dati[, y], dati[, x1], plot = FALSE, prc = prc, cutoff = cutoff)$AUC
+    a2 <- ROCcurve(dati[, y], dati[, x2], plot = FALSE, prc = prc, cutoff = cutoff)$AUC
     if(verbose){setTxtProgressBar(pb, i)}
     return(a1 - a2)
   })
