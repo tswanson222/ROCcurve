@@ -26,14 +26,13 @@ thresh <- function(x, y, prc = FALSE, scale.max = 'default', cutoff = '>', round
     pp <- b[1] + b[2] * v
     return(unname(exp(pp)/(1 + exp(pp))))
   }
-  k <- round(curve$optimal[1], round)
-  pp <- round(sapply(values, predprobs, b = b), round)
-  out <- values[max(which(pp < k)) + 1]
-  #if(any(pp == k)){
-  #  out <- values[which(pp == k)]
-  #} else {
-  #  out <- values[max(which(pp < k)) + 1]
-  #}
+  if(curve$optimal[1] %in% c(-Inf, Inf)){
+    out <- curve$optimal[1]
+  } else {
+    k <- round(curve$optimal[1], round)
+    pp <- round(sapply(values, predprobs, b = b), round)
+    out <- values[ifelse(any(pp < k), max(which(pp < k)), 0) + 1]
+  }
   names(out) <- paste0(ifelse(prc, 'PRC', 'ROC'), '_thresh')
   return(out)
 }
