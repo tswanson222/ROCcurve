@@ -26,6 +26,8 @@
 #' @param plot_na Logical
 #' @param cutoff Character string. Define how to classify cases relative to the
 #'   predicted probability cutoff
+#' @param preds Vector of predicted probabilities from model. Can supply directly 
+#'   instead of generating predictions inside the function.
 #'
 #' @return An ROCcurve object or plot
 #' @export
@@ -43,10 +45,11 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
                      midline = TRUE, midline_lty = 2, midline_lwd = 2, midline_col = "red",
                      pt_pch = 23, pt_border = "black", pt_col = "green", thresh = TRUE,
                      roc_lty = 1, roc_lwd = 2, roc_col = "black", prc = FALSE,
-                     plot_na = FALSE, cutoff = '>'){
+                     plot_na = FALSE, cutoff = '>', preds = NULL){
   cutoff <- match.arg(cutoff, c('>', '>='))
   stopifnot(all(sapply(list(prc, plot, plot_na), is.logical)))
-  if(is(y, 'ROCcurve')){
+  yROC <- tryCatch(is(y, 'ROCcurve'), error = function(e) FALSE)
+  if(yROC){
     sens <- y$results$sens
     spec <- y$results$spec
     ppv <- y$results$ppv
@@ -67,7 +70,9 @@ ROCcurve <- function(y, X = NULL, model = NULL, plot = FALSE, optPoint = TRUE,
       y <- as.numeric(as.character(y))
     }
     stopifnot(all(names(table(y)) %in% c("0", "1")))
-    if(is.null(model)){
+    if(!is.null(preds)){
+      predProbs <- preds
+    } else if(is.null(model)){
       stopifnot(!is.null(X))
       X <- as.data.frame(X)
       model <- glm(y ~ ., data = X, family = binomial)
