@@ -71,7 +71,7 @@ auc_test <- function(data, y, x1, x2, nboot = 1000, seed = NULL,
   }
   if(!is.null(seed)){set.seed(seed)}
   if(verbose){pb <- txtProgressBar(max = nboot, style = 3)}
-  auc_diffs <- sapply(1:nboot, function(i){
+  boot_aucs <- setNames(data.frame(do.call(rbind, lapply(1:nboot, function(i){
     if(stratified){
       k <- unique(data[, y])
       y0 <- data[which(data[, y] == k[1]), ]
@@ -94,18 +94,19 @@ auc_test <- function(data, y, x1, x2, nboot = 1000, seed = NULL,
       a2 <- ROCcurve(dati[, y], dati[, x2], plot = FALSE, prc = prc, cutoff = cutoff)$AUC
     }
     if(verbose){setTxtProgressBar(pb, i)}
-    return(a1 - a2)
-  })
-  d <- (auc1 - auc2)/sd(auc_diffs)
+    return(c(a1, a2))
+  }))), c('a1', 'a2'))
+  boot_aucs$auc_diff <- boot_aucs$a1 - boot_aucs$a2
+  d <- (auc1 - auc2)/sd(boot_aucs$auc_diff)
   if(alternative == 'two.sided'){
     p <- pnorm(abs(d), lower.tail = FALSE) * 2
   } else {
     p <- pnorm(d, lower.tail = isTRUE(alternative == 'less'))
   }
   out <- data.frame(type = ifelse(prc, 'PRC', 'ROC'), auc1, auc2,
-                    sd_diff = sd(auc_diffs), D = d, pvalue = p)
+                    sd_diff = sd(boot_aucs$auc_diff), D = d, pvalue = p)
   attributes(out)[c('nboot', 'stratified', 'alternative')] <- list(nboot, stratified, alternative)
-  attr(out, 'auc_diffs') <- auc_diffs
+  attr(out, 'boot_aucs') <- boot_aucs
   if(length(x1) == 1 & length(x2) == 1){
     colnames(out)[startsWith(colnames(out), 'auc')] <- c(x1, x2)
   }
